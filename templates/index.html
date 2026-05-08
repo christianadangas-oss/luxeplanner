@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>LuxePlanner AI</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+       background: #f5f5f5; min-height: 100vh; padding: 2rem; }
+.container { max-width: 740px; margin: 0 auto; }
+.brand { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.mark { width: 32px; height: 32px; background: #111; border-radius: 7px;
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-size: 18px; }
+.brand-name { font-size: 18px; font-weight: 600; color: #111; }
+.brand-name span { color: #999; font-weight: 400; }
+.tagline { font-size: 13px; color: #888; margin-bottom: 2rem; padding-left: 42px; }
+.card { background: white; border-radius: 12px; border: 1px solid #e5e5e5;
+        padding: 20px; margin-bottom: 16px; }
+.upload-zone { border: 1.5px dashed #ccc; border-radius: 10px; padding: 2.5rem;
+               text-align: center; cursor: pointer; background: #fafafa;
+               transition: border-color 0.2s; }
+.upload-zone:hover { border-color: #111; }
+.upload-zone.dragover { border-color: #111; background: #f0f0f0; }
+.upload-icon { font-size: 32px; margin-bottom: 10px; }
+.upload-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.upload-sub { font-size: 12px; color: #888; }
+input[type=file] { display: none; }
+.file-chip { display: none; align-items: center; gap: 10px; background: #f5f5f5;
+             border-radius: 8px; padding: 10px 14px; margin-top: 12px; }
+.file-chip span { flex: 1; font-size: 13px; font-weight: 500; }
+.file-chip .size { font-size: 11px; color: #888; }
+.remove { background: none; border: none; cursor: pointer; color: #888;
+          font-size: 20px; line-height: 1; padding: 0; }
+.go-btn { width: 100%; padding: 12px; font-size: 15px; font-weight: 600;
+          background: #111; color: white; border: none; border-radius: 8px;
+          cursor: pointer; margin-top: 14px; }
+.go-btn:disabled { background: #ccc; cursor: not-allowed; }
+.go-btn:hover:not(:disabled) { background: #333; }
+.loading { text-align: center; padding: 3rem; display: none; }
+.spinner { width: 30px; height: 30px; border: 2.5px solid #eee;
+           border-top-color: #111; border-radius: 50%;
+           animation: spin 0.7s linear infinite; margin: 0 auto 14px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.load-text { font-size: 14px; font-weight: 500; }
+.load-step { font-size: 13px; color: #888; margin-top: 6px; }
+.result-header { display: flex; align-items: center; justify-content: space-between;
+                 margin-bottom: 16px; }
+.result-title { font-size: 17px; font-weight: 600; }
+.result-sub { font-size: 13px; color: #888; margin-top: 2px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+.stat { background: #f5f5f5; border-radius: 8px; padding: 12px; }
+.stat-n { font-size: 20px; font-weight: 600; }
+.stat-l { font-size: 11px; color: #888; margin-top: 2px; }
+.section { border: 1px solid #e5e5e5; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+.sec-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+            cursor: pointer; background: white; user-select: none; }
+.sec-head:hover { background: #fafafa; }
+.sec-icon { font-size: 16px; }
+.sec-label { font-size: 14px; font-weight: 500; flex: 1; }
+.sec-chev { color: #aaa; transition: transform 0.15s; }
+.sec-chev.open { transform: rotate(180deg); }
+.sec-body { padding: 0 14px 12px; display: none; }
+.sec-body.open { display: block; }
+.field-row { display: flex; justify-content: space-between; padding: 6px 0;
+             border-bottom: 1px solid #f0f0f0; font-size: 13px; gap: 16px; }
+.field-row:last-child { border-bottom: none; }
+.fk { color: #888; min-width: 130px; flex-shrink: 0; }
+.fv { color: #111; text-align: right; word-break: break-word; }
+.flag { display: flex; gap: 10px; padding: 7px 0;
+        border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+.flag:last-child { border-bottom: none; }
+.dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+.dot-r { background: #ef4444; } .dot-a { background: #f59e0b; } .dot-g { background: #10b981; }
+.flag-title { font-weight: 500; }
+.flag-detail { font-size: 12px; color: #666; margin-top: 2px; }
+.badge { display: inline-block; font-size: 10px; padding: 2px 8px;
+         border-radius: 20px; font-weight: 500; margin-left: 6px; }
+.badge-r { background: #fef2f2; color: #dc2626; }
+.badge-a { background: #fffbeb; color: #d97706; }
+.badge-g { background: #f0fdf4; color: #16a34a; }
+.badge-k { background: #f3f4f6; color: #6b7280; }
+.btn-row { display: flex; gap: 10px; margin-top: 14px; }
+.btn-row button { flex: 1; padding: 10px; font-size: 13px; font-weight: 500;
+                  border: 1.5px solid #e5e5e5; background: white;
+                  border-radius: 8px; cursor: pointer; }
+.btn-row button:hover { background: #f5f5f5; }
+.error-box { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px;
+             padding: 12px 16px; color: #dc2626; font-size: 13px;
+             margin-top: 12px; display: none; }
+.copy-btn { background: #f3f4f6; border: 1px solid #e5e5e5; border-radius: 6px;
+            padding: 6px 12px; font-size: 12px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="brand">
+    <div class="mark">◈</div>
+    <div class="brand-name">LuxePlanner <span>AI</span></div>
+  </div>
+  <div class="tagline">Upload a vendor contract → get a production bible entry in seconds</div>
+
+  <div class="card" id="upload-card">
+    <div class="upload-zone" id="drop-zone">
+      <div class="upload-icon">☁</div>
+      <div class="upload-title">Drop your vendor contract PDF here</div>
+      <div class="upload-sub">Venue · Catering · Florals · Photography · Music · Any vendor</div>
+      <input type="file" id="file-input" accept=".pdf">
+    </div>
+    <div id="file-chip" class="file-chip">
+      <span id="file-name"></span>
+      <span class="size" id="file-size"></span>
+      <button class="remove" onclick="resetFile()">×</button>
+    </div>
+    <button class="go-btn" id="go-btn" disabled onclick="uploadAndExtract()">
+      ✦  Extract production bible entry
+    </button>
+    <div class="error-box" id="error-box"></div>
+  </div>
+
+  <div class="loading" id="loading-card">
+    <div class="spinner"></div>
+    <div class="load-text">Reading contract...</div>
+    <div class="load-step" id="load-step">Extracting key clauses</div>
+  </div>
+
+  <div id="result-card"></div>
+
+</div>
+<script>
+let selectedFile = null, resultData = null;
+const steps = ['Extracting key clauses...','Identifying payment schedule...',
+  'Checking cancellation terms...','Flagging risk items...','Building production bible...'];
+let si = 0, stimer = null;
+
+document.getElementById('drop-zone').addEventListener('click',
+  () => document.getElementById('file-input').click());
+document.getElementById('drop-zone').addEventListener('dragover',
+  e => { e.preventDefault(); e.currentTarget.classList.add('dragover'); });
+document.getElementById('drop-zone').addEventListener('dragleave',
+  e => e.currentTarget.classList.remove('dragover'));
+document.getElementById('drop-zone').addEventListener('drop', e => {
+  e.preventDefault(); e.currentTarget.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type === 'application/pdf') setFile(f);
+});
+document.getElementById('file-input').addEventListener('change',
+  e => { if (e.target.files[0]) setFile(e.target.files[0]); });
+
+function setFile(f) {
+  selectedFile = f;
+  document.getElementById('file-name').textContent = f.name;
+  document.getElementById('file-size').textContent = (f.size/1024).toFixed(0) + ' KB';
+  document.getElementById('file-chip').style.display = 'flex';
+  document.getElementById('go-btn').disabled = false;
+  document.getElementById('error-box').style.display = 'none';
+}
+
+function resetFile() {
+  selectedFile = null;
+  document.getElementById('file-input').value = '';
+  document.getElementById('file-chip').style.display = 'none';
+  document.getElementById('go-btn').disabled = true;
+  document.getElementById('result-card').innerHTML = '';
+}
+
+function startSteps() {
+  si = 0;
+  document.getElementById('load-step').textContent = steps[0];
+  stimer = setInterval(() => {
+    si = (si + 1) % steps.length;
+    document.getElementById('load-step').textContent = steps[si];
+  }, 2000);
+}
+
+function stopSteps() { clearInterval(stimer); }
+
+async function uploadAndExtract() {
+  if (!selectedFile) return;
+  document.getElementById('upload-card').style.display = 'none';
+  document.getElementById('loading-card').style.display = 'block';
+  document.getElementById('result-card').innerHTML = '';
+  startSteps();
+
+  const fd = new FormData();
+  fd.append('pdf', selectedFile);
+
+  try {
+    const res = await fetch('/extract', { method: 'POST', body: fd });
+    const data = await res.json();
+    stopSteps();
+    document.getElementById('loading-card').style.display = 'none';
+    if (data.error) throw new Error(data.error);
+    resultData = data;
+    renderResult(data);
+  } catch(e) {
+    stopSteps();
+    document.getElementById('loading-card').style.display = 'none';
+    document.getElementById('upload-card').style.display = 'block';
+    const eb = document.getElementById('error-box');
+    eb.textContent = 'Error: ' + e.message;
+    eb.style.display = 'block';
+  }
+}
+
+function renderResult(d) {
+  const risks = d.risk_flags || [];
+  const highs = risks.filter(r => r.severity === 'high').length;
+  let h = `<div class="card">
+    <div class="result-header">
+      <div>
+        <div class="result-title">${d.vendor_name || 'Vendor'}
+          <span class="badge badge-k">${d.vendor_type || ''}</span></div>
+        <div class="result-sub">Event: ${d.event_date || '—'}</div>
+      </div>
+      <button class="copy-btn" onclick="copyResult()">Copy</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-n">${d.total_value || '—'}</div>
+        <div class="stat-l">Total value</div></div>
+      <div class="stat"><div class="stat-n" style="color:${highs>0?'#ef4444':'#10b981'}">${risks.length}</div>
+        <div class="stat-l">Risk flags</div></div>
+      <div class="stat"><div class="stat-n">${(d.payment_schedule||[]).length}</div>
+        <div class="stat-l">Payments</div></div>
+    </div>`;
+
+  h += sec('💳', 'Payment schedule', payRows(d), true);
+  h += sec('✓', 'Services & deliverables', svcRows(d), true);
+  h += sec('📅', 'Key dates', dateRows(d), true);
+  h += sec('⚖', 'Cancellation & legal', legalRows(d), false);
+  if (risks.length) h += sec('⚠', 'Risk flags' + (highs > 0 ? ` <span class="badge badge-r">${highs} high</span>` : ''), riskRows(risks), true);
+  h += `<div class="btn-row">
+    <button onclick="copyResult()">Copy as text</button>
+    <button onclick="document.getElementById('upload-card').style.display='block';
+      document.getElementById('result-card').innerHTML='';resetFile()">+ Next contract</button>
+  </div></div>`;
+
+  document.getElementById('result-card').innerHTML = h;
+  document.getElementById('result-card').querySelectorAll('.sec-head').forEach(sh => {
+    sh.addEventListener('click', () => {
+      sh.nextElementSibling.classList.toggle('open');
+      sh.querySelector('.sec-chev').classList.toggle('open');
+    });
+  });
+}
+
+function sec(icon, label, content, open) {
+  return `<div class="section"><div class="sec-head">
+    <span class="sec-icon">${icon}</span>
+    <span class="sec-label">${label}</span>
+    <span class="sec-chev${open?' open':''}">▾</span>
+  </div><div class="sec-body${open?' open':''}">${content}</div></div>`;
+}
+
+function row(k, v) {
+  return v ? `<div class="field-row"><span class="fk">${k}</span><span class="fv">${v}</span></div>` : '';
+}
+
+function payRows(d) {
+  let h = row('Total', d.total_value) + row('Deposit', d.deposit_amount) +
+    row('Deposit due', d.deposit_due_date) + row('Final payment', d.final_payment_due) +
+    row('Overtime', d.overtime_policy);
+  (d.payment_schedule || []).forEach((p, i) => h += row('Payment ' + (i+1), p));
+  return h || '<div style="color:#888;font-size:12px;padding:6px 0">Not found</div>';
+}
+
+function svcRows(d) {
+  let h = row('Staff', d.staff_count) + row('Setup', d.setup_time) +
+    row('Breakdown', d.breakdown_time) + row('Exclusivity', d.exclusivity);
+  (d.services_included || []).forEach(s => h += row('Service', s));
+  return h || '<div style="color:#888;font-size:12px;padding:6px 0">Not found</div>';
+}
+
+function dateRows(d) {
+  let h = row('Event date', d.event_date);
+  (d.key_dates || []).forEach(kd => h += row(kd.date, kd.description));
+  return h || '<div style="color:#888;font-size:12px;padding:6px 0">Not found</div>';
+}
+
+function legalRows(d) {
+  let h = row('Cancellation', d.cancellation_policy) +
+    row('Force majeure', d.force_majeure) + row('Insurance', d.liability_insurance);
+  (d.cancellation_deadlines || []).forEach(cd => h += row('Deadline', cd));
+  return h || '<div style="color:#888;font-size:12px;padding:6px 0">Not found</div>';
+}
+
+function riskRows(flags) {
+  return flags.map(f => {
+    const dc = f.severity==='high'?'dot-r':f.severity==='medium'?'dot-a':'dot-g';
+    const bc = f.severity==='high'?'badge-r':f.severity==='medium'?'badge-a':'badge-g';
+    return `<div class="flag"><div class="dot ${dc}"></div><div>
+      <div class="flag-title">${f.title}<span class="badge ${bc}">${f.severity}</span></div>
+      <div class="flag-detail">${f.detail}</div>
+    </div></div>`;
+  }).join('');
+}
+
+function copyResult() {
+  if (!resultData) return;
+  const d = resultData;
+  let t = 'LUXEPLANNER AI — PRODUCTION BIBLE ENTRY\n' + '─'.repeat(40) + '\n';
+  t += `Vendor: ${d.vendor_name||'—'}\nType: ${d.vendor_type||'—'}\nEvent: ${d.event_date||'—'}\nTotal: ${d.total_value||'—'}\n\nPAYMENT SCHEDULE\n`;
+  (d.payment_schedule||[]).forEach(p => t += `• ${p}\n`);
+  t += '\nSERVICES\n';
+  (d.services_included||[]).forEach(s => t += `• ${s}\n`);
+  t += `\nCANCELLATION\n${d.cancellation_policy||'—'}\n`;
+  if ((d.risk_flags||[]).length) {
+    t += '\nRISK FLAGS\n';
+    d.risk_flags.forEach(r => t += `[${r.severity.toUpperCase()}] ${r.title}: ${r.detail}\n`);
+  }
+  navigator.clipboard.writeText(t);
+  alert('Copied to clipboard!');
+}
+</script>
+</body>
+</html>
