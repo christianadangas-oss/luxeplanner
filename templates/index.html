@@ -91,6 +91,14 @@ input[type=file] { display: none; }
              margin-top: 12px; display: none; }
 .copy-btn { background: #f3f4f6; border: 1px solid #e5e5e5; border-radius: 6px;
             padding: 6px 12px; font-size: 12px; cursor: pointer; }
+.hero { background: white; border-radius: 12px; border: 1px solid #e5e5e5;
+        padding: 22px 24px; margin-bottom: 16px; font-size: 14px;
+        line-height: 1.6; color: #333; }
+.footer { text-align: center; font-size: 12px; color: #888;
+          margin-top: 32px; padding-top: 20px;
+          border-top: 1px solid #e5e5e5; }
+.footer a { color: #111; text-decoration: none; font-weight: 500; }
+.footer a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -101,6 +109,10 @@ input[type=file] { display: none; }
     <div class="brand-name">LuxePlanner <span>AI</span></div>
   </div>
   <div class="tagline">Upload a vendor contract → get a production bible entry in seconds</div>
+
+  <div class="hero">
+    Luxury wedding planners spend 20+ hours reviewing vendor contracts for a single event. LuxePlanner AI streamlines this process in seconds. Upload your vendor contracts from venue, catering, florals, photography, and more, to get a full production bible in seconds. Payment schedules, cancellation terms, setup windows, risk flags, and more key metrics are all extracted automatically. Try our first functional MVP prototype here for free!
+  </div>
 
   <div class="card" id="upload-card">
     <div class="upload-zone" id="drop-zone">
@@ -127,6 +139,11 @@ input[type=file] { display: none; }
   </div>
 
   <div id="result-card"></div>
+
+  <div class="footer">
+    Contact us with any inquiries, suggestions, or concerns —
+    <a href="mailto:christianadangas@gmail.com">christianadangas@gmail.com</a>
+  </div>
 
 </div>
 <script>
